@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kairo // Study Block Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #FAFAFA;
+            --bg-surface: #FFFFFF;
+            --bg-subtle: #F4F4F5;
+            --text-primary: #09090B;
+            --text-secondary: #52525B;
+            --text-muted: #A1A1AA;
+            --border: #E4E4E7;
+            --border-hover: #A1A1AA;
+            --accent: #18181B;
+            --accent-fg: #FFFFFF;
+            --status-active: #10B981;
+            --status-active-bg: rgba(16, 185, 129, 0.1);
+            --danger: #EF4444;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body.dark {
+            --bg-base: #09090B;
+            --bg-surface: #121215;
+            --bg-subtle: #18181C;
+            --text-primary: #F4F4F5;
+            --text-secondary: #A1A1AA;
+            --text-muted: #52525B;
+            --border: #27272A;
+            --border-hover: #3F3F46;
+            --accent: #F4F4F5;
+            --accent-fg: #09090B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        /* Navbar */
+        .navbar {
+            border-bottom: 1px solid var(--border);
+            background-color: var(--bg-surface);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--status-active);
+            border-radius: 50%;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: color 0.15s, background-color 0.15s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+            background-color: var(--bg-subtle);
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--border-hover);
+            background-color: var(--bg-subtle);
+        }
+
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* Hero Bar */
+        .hero-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .date-label {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .greeting-title {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+        }
+
+        .greeting-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .clock-box { text-align: right; }
+
+        .live-clock {
+            font-family: var(--font-mono);
+            font-size: 32px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .period-tag {
+            display: inline-block;
+            margin-top: 6px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 600;
+            margin-top: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Creator Form */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .creator-bar {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.2fr auto;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 36px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .field input, .field select {
+            height: 38px;
+            padding: 0 12px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .field input[type="time"] { font-family: var(--font-mono); }
+        .field input:focus, .field select:focus { border-color: var(--text-primary); }
+
+        .btn-primary {
+            height: 38px;
+            padding: 0 18px;
+            background-color: var(--accent);
+            color: var(--accent-fg);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+
+        /* Blocks Grid */
+        .blocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .block-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.15s;
+        }
+
+        .block-card:hover { border-color: var(--border-hover); }
+        .block-card.is-active { border-color: var(--status-active); }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .time-badge {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background-color: var(--bg-subtle);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .active-pill {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--status-active);
+            background-color: var(--status-active-bg);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .tag-pill {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .block-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 6px;
+        }
+
+        .block-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-family: var(--font-mono);
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .launch-link {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .launch-link:hover { text-decoration: underline; }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+            background-color: var(--bg-subtle);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 48px 20px;
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        @media (max-width: 820px) {
+            .creator-bar { grid-template-columns: 1fr 1fr; }
+            .creator-bar .field:first-child, .creator-bar button { grid-column: 1 / -1; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .clock-box { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="brand">
+                <span class="brand-dot"></span>
+                <span>KAIRO // WORKSPACE</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">Dashboard</a>
+                <a href="timer.html" class="nav-link">Focus Room</a>
+                <a href="stats.html" class="nav-link">Analytics</a>
+                <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">THEME: LIGHT</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero-bar">
+            <div>
+                <div class="date-label" id="dateDisplay">LOADING DATE...</div>
+                <h1 class="greeting-title" id="greetingText">Good Evening.</h1>
+                <p class="greeting-sub" id="statusSubtext">Select a study block below to initialize your focus timer.</p>
+            </div>
+            <div class="clock-box">
+                <div class="live-clock" id="clockDisplay">00:00:00</div>
+                <span class="period-tag" id="dayPhaseTag">PHASE: NIGHT</span>
+            </div>
+        </section>
+
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Configured Study Blocks</div>
+                <div class="metric-value" id="metricBlocks">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Pending Tasks Across Blocks</div>
+                <div class="metric-value" id="metricTasks">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Total Focus Logged</div>
+                <div class="metric-value" id="metricFocus">0h 0m</div>
+            </div>
+        </section>
+
+        <div class="section-header">
+            <span class="section-title">Create Study Block</span>
+        </div>
+        <form class="creator-bar" onsubmit="addBlock(event)">
+            <div class="field">
+                <label for="blockTitle">Block Title</label>
+                <input type="text" id="blockTitle" placeholder="e.g., DSA & Problem Solving" required>
+            </div>
+            <div class="field">
+                <label for="startTime">Start Time</label>
+                <input type="time" id="startTime" value="08:00" required>
+            </div>
+            <div class="field">
+                <label for="endTime">End Time</label>
+                <input type="time" id="endTime" value="12:00" required>
+            </div>
+            <div class="field">
+                <label for="blockTag">Category</label>
+                <select id="blockTag">
+                    <option value="CORE CS">Core CS</option>
+                    <option value="CODING">Coding / Lab</option>
+                    <option value="MATH">Mathematics</option>
+                    <option value="REVISION">Exam Prep</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">+ Add Block</button>
+        </form>
+
+        <div class="section-header">
+            <span class="section-title">Daily Schedule Blocks</span>
+        </div>
+        <div class="blocks-grid" id="blocksGrid"></div>
+    </main>
+
+    <script>
+        function applySavedTheme() {
+            const isDark = localStorage.getItem("darkMode") === "true";
+            document.body.classList.toggle("dark", isDark);
+            document.getElementById("themeToggle").innerText = isDark ? "THEME: DARK" : "THEME: LIGHT";
+        }
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle("dark");
+            localStorage.setItem("darkMode", isDark);
+            document.getElementById("themeToggle").innerText = isDark ? "THEME: DARK" : "THEME: LIGHT";
+        }
+
+        const defaultBlocks = [
+            { title: "Morning Core Block", start: "08:00", end: "12:00", tag: "CORE CS" },
+            { title: "Afternoon Lab & Implementation", start: "14:00", end: "18:00", tag: "CODING" },
+            { title: "Night Problem Solving", start: "20:00", end: "23:00", tag: "REVISION" }
+        ];
+
+        let studyBlocks = JSON.parse(localStorage.getItem("studyBlocks_v2"));
+        if (!studyBlocks) {
+            studyBlocks = defaultBlocks;
+            localStorage.setItem("studyBlocks_v2", JSON.stringify(studyBlocks));
+        }
+
+        function isTimeInWindow(startStr, endStr, now) {
+            const currentMins = now.getHours() * 60 + now.getMinutes();
+            const [sH, sM] = startStr.split(":").map(Number);
+            const [eH, eM] = endStr.split(":").map(Number);
+            return currentMins >= (sH * 60 + sM) && currentMins < (eH * 60 + eM);
+        }
+
+        function updateTimeEngine() {
+            const now = new Date();
+            const dateOptions = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+            document.getElementById("dateDisplay").innerText = now.toLocaleDateString('en-US', dateOptions);
+            document.getElementById("clockDisplay").innerText = now.toLocaleTimeString('en-GB', { hour12: false });
+
+            const hour = now.getHours();
+            let greeting = "Good Night.";
+            let phase = "PHASE: LATE NIGHT";
+
+            if (hour >= 5 && hour < 12) {
+                greeting = "Good Morning.";
+                phase = "PHASE: MORNING BLOCK";
+            } else if (hour >= 12 && hour < 17) {
+                greeting = "Good Afternoon.";
+                phase = "PHASE: AFTERNOON BLOCK";
+            } else if (hour >= 17 && hour < 22) {
+                greeting = "Good Evening.";
+                phase = "PHASE: EVENING BLOCK";
+            }
+
+            document.getElementById("greetingText").innerText = greeting;
+            document.getElementById("dayPhaseTag").innerText = phase;
+
+            const activeBlock = studyBlocks.find(b => isTimeInWindow(b.start, b.end, now));
+            const subtextEl = document.getElementById("statusSubtext");
+            if (activeBlock) {
+                subtextEl.innerText = `Active study window: ${activeBlock.title} (${activeBlock.start} – ${activeBlock.end})`;
+            } else {
+                subtextEl.innerText = "Off-block hours. Select any study block below to launch a focus session.";
+            }
+        }
+
+        function renderDashboard() {
+            const grid = document.getElementById("blocksGrid");
+            const now = new Date();
+            grid.innerHTML = "";
+            let totalPendingTasks = 0;
+
+            if (studyBlocks.length === 0) {
+                grid.innerHTML = `<div class="empty-state">No study blocks configured. Add a block above to build your schedule.</div>`;
+            } else {
+                studyBlocks.forEach((block, index) => {
+                    const active = isTimeInWindow(block.start, block.end, now);
+                    const blockTasks = JSON.parse(localStorage.getItem(`tasks_${block.title}`)) || [];
+                    const pendingCount = blockTasks.filter(t => !t.completed).length;
+                    const doneCount = blockTasks.filter(t => t.completed).length;
+                    totalPendingTasks += pendingCount;
+
+                    const card = document.createElement("div");
+                    card.className = `block-card ${active ? "is-active" : ""}`;
+                    card.innerHTML = `
+                        <div>
+                            <div class="card-top">
+                                <span class="time-badge">${block.start} – ${block.end}</span>
+                                ${active ? `<span class="active-pill">● ACTIVE NOW</span>` : `<span class="tag-pill">[${block.tag}]</span>`}
+                            </div>
+                            <h3 class="block-title">${block.title}</h3>
+                            <div class="block-meta">
+                                <span>${pendingCount} PENDING</span>
+                                <span>•</span>
+                                <span>${doneCount} DONE</span>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <a href="timer.html?block=${encodeURIComponent(block.title)}&start=${block.start}&end=${block.end}" class="launch-link">
+                                Open Focus Room →
+                            </a>
+                            <button class="delete-btn" onclick="deleteBlock(${index})">DEL</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            document.getElementById("metricBlocks").innerText = studyBlocks.length;
+            document.getElementById("metricTasks").innerText = totalPendingTasks;
+
+            const totalMinutes = parseInt(localStorage.getItem("totalFocusTime") || "0", 10);
+            document.getElementById("metricFocus").innerText = `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`;
+        }
+
+        function addBlock(event) {
+            event.preventDefault();
+            const title = document.getElementById("blockTitle").value.trim();
+            const start = document.getElementById("startTime").value;
+            const end = document.getElementById("endTime").value;
+            const tag = document.getElementById("blockTag").value;
+
+            if (!title) return;
+            studyBlocks.push({ title, start, end, tag });
+            localStorage.setItem("studyBlocks_v2", JSON.stringify(studyBlocks));
+            document.getElementById("blockTitle").value = "";
+            updateTimeEngine();
+            renderDashboard();
+        }
+
+        function deleteBlock(index) {
+            studyBlocks.splice(index, 1);
+            localStorage.setItem("studyBlocks_v2", JSON.stringify(studyBlocks));
+            updateTimeEngine();
+            renderDashboard();
+        }
+
+        applySavedTheme();
+        updateTimeEngine();
+        renderDashboard();
+        setInterval(updateTimeEngine, 1000);
+    </script>
+</body>
+</html>

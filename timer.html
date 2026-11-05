@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kairo // Focus Room</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #F8FAFC;
+            --bg-surface: #FFFFFF;
+            --bg-subtle: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            --border: #E2E8F0;
+            --border-hover: #CBD5E1;
+            --accent: #4F46E5;
+            --accent-hover: #4338CA;
+            --accent-fg: #FFFFFF;
+            --status-active: #059669;
+            --status-active-bg: rgba(5, 150, 105, 0.1);
+            --p1-color: #DC2626;
+            --p2-color: #D97706;
+            --p3-color: #2563EB;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body.dark {
+            --bg-base: #0B0F19;
+            --bg-surface: #111827;
+            --bg-subtle: #1F2937;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+            --border: #374151;
+            --border-hover: #4B5563;
+            --accent: #6366F1;
+            --accent-hover: #4F46E5;
+            --accent-fg: #FFFFFF;
+            --status-active: #10B981;
+            --status-active-bg: rgba(16, 185, 129, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Navbar */
+        .navbar {
+            border-bottom: 1px solid var(--border);
+            background-color: var(--bg-surface);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--status-active);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--status-active);
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 6px; }
+
+        .nav-link {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+            background-color: var(--bg-subtle);
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--border-hover);
+            background-color: var(--bg-subtle);
+        }
+
+        /* Container & Context Bar */
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        .context-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .block-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--accent);
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
+        .room-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-top: 2px;
+        }
+
+        .switcher-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .switcher-group label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .block-select {
+            height: 38px;
+            padding: 0 12px;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: var(--font-sans);
+            outline: none;
+        }
+
+        /* Two-Column Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .mode-badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background-color: var(--status-active-bg);
+            color: var(--status-active);
+        }
+
+        /* Pinned Task Banner */
+        .pinned-banner {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(5, 150, 105, 0.05));
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .pinned-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .pinned-name {
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        /* Timer Readout */
+        .timer-readout {
+            font-family: var(--font-mono);
+            font-size: 72px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.04em;
+            text-align: center;
+            line-height: 1.1;
+            margin: 16px 0 24px;
+            color: var(--text-primary);
+        }
+
+        .timer-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            height: 40px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            border-color: var(--border-hover);
+            background-color: var(--bg-subtle);
+        }
+
+        .btn-solid {
+            background-color: var(--accent);
+            color: var(--accent-fg);
+            border-color: var(--accent);
+        }
+
+        .btn-solid:hover {
+            background-color: var(--accent-hover);
+            opacity: 1;
+        }
+
+        /* Duration Inputs */
+        .duration-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .field input {
+            width: 100%;
+            height: 38px;
+            padding: 0 10px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+        }
+
+        /* YouTube Music Selector Box */
+        .music-box {
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .music-select-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 10px;
+        }
+
+        .music-select-row select {
+            flex: 1;
+            height: 36px;
+            padding: 0 10px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: var(--font-sans);
+            outline: none;
+        }
+
+        .music-box iframe {
+            width: 100%;
+            height: 90px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* Task Progress Bar */
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background-color: var(--bg-subtle);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--status-active);
+            transition: width 0.25s ease;
+        }
+
+        /* Task Creator Form */
+        .task-form {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .task-form input, .task-form select {
+            height: 38px;
+            padding: 0 12px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .task-form select { font-family: var(--font-mono); font-size: 12px; }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-tabs { display: flex; gap: 4px; }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background-color: var(--bg-subtle);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: none;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .clear-btn:hover { color: var(--p1-color); }
+
+        /* Task List */
+        .task-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            gap: 12px;
+        }
+
+        .task-item.is-pinned {
+            border-color: var(--accent);
+            background-color: rgba(79, 70, 229, 0.03);
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .task-left input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--status-active);
+        }
+
+        .task-text { font-size: 13px; }
+        .task-text.done { text-decoration: line-through; color: var(--text-muted); }
+
+        .prio-tag {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .prio-P1 { color: var(--p1-color); border-color: rgba(220, 38, 38, 0.3); }
+        .prio-P2 { color: var(--p2-color); border-color: rgba(217, 119, 6, 0.3); }
+        .prio-P3 { color: var(--p3-color); border-color: rgba(37, 99, 235, 0.3); }
+
+        .pomo-count {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .task-actions { display: flex; align-items: center; gap: 6px; }
+
+        .mini-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .mini-btn:hover { color: var(--text-primary); border-color: var(--border-hover); }
+
+        @media (max-width: 820px) {
+            .workspace-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="brand">
+                <span class="brand-dot"></span>
+                <span>KAIRO // WORKSPACE</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="timer.html" class="nav-link active">Focus Room</a>
+                <a href="stats.html" class="nav-link">Analytics</a>
+                <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">THEME: LIGHT</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="context-bar">
+            <div>
+                <div class="block-label" id="windowLabel">STUDY BLOCK WORKSPACE</div>
+                <h1 class="room-title" id="roomTitle">General Session</h1>
+            </div>
+            <div class="switcher-group">
+                <label for="blockSwitcher">SWITCH BLOCK:</label>
+                <select id="blockSwitcher" class="block-select" onchange="switchBlock(this.value)"></select>
+            </div>
+        </section>
+
+        <div class="workspace-grid">
+            <!-- Left Panel: Timer & YouTube Study Music -->
+            <section class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Pomodoro Engine</span>
+                    <span class="mode-badge" id="modeBadge">FOCUS MODE</span>
+                </div>
+
+                <div class="pinned-banner">
+                    <span class="pinned-label">ACTIVE PINNED TARGET</span>
+                    <span class="pinned-name" id="pinnedTaskText">None (Click PIN on any task below)</span>
+                </div>
+
+                <div class="timer-readout" id="timeDisplay">25:00</div>
+
+                <div class="timer-controls">
+                    <button class="btn btn-solid" id="startBtn" onclick="startTimer()">START</button>
+                    <button class="btn" onclick="pauseTimer()">PAUSE</button>
+                    <button class="btn" onclick="resetTimer()">RESET</button>
+                </div>
+
+                <div class="duration-grid">
+                    <div class="field">
+                        <label for="focusInput">Focus (Min)</label>
+                        <input type="number" id="focusInput" value="25" min="1" max="180">
+                    </div>
+                    <div class="field">
+                        <label for="breakInput">Break (Min)</label>
+                        <input type="number" id="breakInput" value="5" min="1" max="60">
+                    </div>
+                    <button class="btn" style="height: 38px; padding: 0 14px;" onclick="applyCustomDuration()">SET</button>
+                </div>
+
+                <!-- YouTube Study Music Feature -->
+                <div class="music-box">
+                    <span class="panel-title">YouTube Study Audio</span>
+                    <div class="music-select-row">
+                        <select id="musicSelect" onchange="changeMusicStream(this.value)">
+                            <option value="jfKfPfyJRdk">Lofi Hip Hop Radio (Beats to Study/Relax)</option>
+                            <option value="5qap5aO4i9A">Lofi Sleep/Study Chill Beats</option>
+                            <option value="4xDzrJKXOOY">Synthwave Radio for Coding & Focus</option>
+                            <option value="DWcJFNfaw9c">Classical Piano & Strings for Problem Solving</option>
+                        </select>
+                    </div>
+                    <iframe id="youtubePlayer" src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+            </section>
+
+            <!-- Right Panel: Block-Specific To-Do Manager -->
+            <section class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Session Tasks</span>
+                    <span class="panel-title" id="taskCounterLabel">0 / 0 COMPLETED</span>
+                </div>
+
+                <div class="progress-meta">
+                    <span>COMPLETION RATE</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <form class="task-form" onsubmit="addTask(event)">
+                    <input type="text" id="taskInput" placeholder="Add study task (e.g., C++ SLL code)..." required>
+                    <select id="priorityInput">
+                        <option value="P1">P1-HIGH</option>
+                        <option value="P2" selected>P2-MED</option>
+                        <option value="P3">P3-LOW</option>
+                    </select>
+                    <button type="submit" class="btn btn-solid" style="padding: 0 16px;">+ ADD</button>
+                </form>
+
+                <div class="filter-bar">
+                    <div class="filter-tabs">
+                        <button class="tab-btn active" id="tab-all" onclick="setFilter('all')">ALL</button>
+                        <button class="tab-btn" id="tab-pending" onclick="setFilter('pending')">PENDING</button>
+                        <button class="tab-btn" id="tab-done" onclick="setFilter('done')">COMPLETED</button>
+                    </div>
+                    <button class="clear-btn" onclick="clearCompleted()">CLEAR COMPLETED</button>
+                </div>
+
+                <ul class="task-list" id="taskList"></ul>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. Theme Sync ---
+        function applySavedTheme() {
+            const isDark = localStorage.getItem("darkMode") === "true";
+            document.body.classList.toggle("dark", isDark);
+            document.getElementById("themeToggle").innerText = isDark ? "THEME: DARK" : "THEME: LIGHT";
+        }
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle("dark");
+            localStorage.setItem("darkMode", isDark);
+            document.getElementById("themeToggle").innerText = isDark ? "THEME: DARK" : "THEME: LIGHT";
+        }
+
+        // --- 2. YouTube Music Stream Switcher ---
+        function changeMusicStream(videoId) {
+            document.getElementById("youtubePlayer").src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        }
+
+        // --- 3. Block Context ---
+        const studyBlocks = JSON.parse(localStorage.getItem("studyBlocks_v2")) || [
+            { title: "Morning Core Block", start: "08:00", end: "12:00", tag: "CORE CS" }
+        ];
+
+        const params = new URLSearchParams(window.location.search);
+        let currentBlockTitle = params.get("block") || studyBlocks[0]?.title || "General Session";
+
+        function setupBlockContext() {
+            const switcher = document.getElementById("blockSwitcher");
+            switcher.innerHTML = "";
+
+            studyBlocks.forEach(b => {
+                const opt = document.createElement("option");
+                opt.value = b.title;
+                opt.innerText = `${b.title} (${b.start}–${b.end})`;
+                if (b.title === currentBlockTitle) opt.selected = true;
+                switcher.appendChild(opt);
+            });
+
+            const matched = studyBlocks.find(b => b.title === currentBlockTitle);
+            document.getElementById("roomTitle").innerText = currentBlockTitle;
+            document.getElementById("windowLabel").innerText = matched
+                ? `SCHEDULED WINDOW // ${matched.start} – ${matched.end} [${matched.tag}]`
+                : `CUSTOM FOCUS WORKSPACE`;
+        }
+
+        function switchBlock(newTitle) {
+            currentBlockTitle = newTitle;
+            pinnedTaskId = null;
+            document.getElementById("pinnedTaskText").innerText = "None (Click PIN on any task below)";
+            setupBlockContext();
+            loadBlockTasks();
+        }
+
+        // --- 4. Pomodoro Engine ---
+        let timerInterval = null;
+        let isRunning = false;
+        let isFocusMode = true;
+        let timeLeft = 25 * 60;
+        let pinnedTaskId = null;
+        const alarmAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+        function renderClock() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById("timeDisplay").innerText = `${m}:${s}`;
+        }
+
+        function applyCustomDuration() {
+            pauseTimer();
+            const fMins = Math.max(1, parseInt(document.getElementById("focusInput").value || "25", 10));
+            const bMins = Math.max(1, parseInt(document.getElementById("breakInput").value || "5", 10));
+            timeLeft = (isFocusMode ? fMins : bMins) * 60;
+            renderClock();
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById("startBtn").innerText = "RUNNING...";
+
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    renderClock();
+                } else {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    document.getElementById("startBtn").innerText = "START";
+                    alarmAudio.play().catch(() => {});
+
+                    if (isFocusMode) {
+                        const loggedMins = Math.max(1, parseInt(document.getElementById("focusInput").value || "25", 10));
+                        const prevTotal = parseInt(localStorage.getItem("totalFocusTime") || "0", 10);
+                        localStorage.setItem("totalFocusTime", prevTotal + loggedMins);
+
+                        if (pinnedTaskId !== null) {
+                            const t = tasks.find(item => item.id === pinnedTaskId);
+                            if (t) {
+                                t.pomos = (t.pomos || 0) + 1;
+                                saveBlockTasks();
+                                renderTasks();
+                            }
+                        }
+                    }
+
+                    isFocusMode = !isFocusMode;
+                    document.getElementById("modeBadge").innerText = isFocusMode ? "FOCUS MODE" : "BREAK TIME";
+                    const nextMins = isFocusMode
+                        ? parseInt(document.getElementById("focusInput").value || "25", 10)
+                        : parseInt(document.getElementById("breakInput").value || "5", 10);
+                    timeLeft = nextMins * 60;
+                    renderClock();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById("startBtn").innerText = "START";
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            isFocusMode = true;
+            document.getElementById("modeBadge").innerText = "FOCUS MODE";
+            const fMins = Math.max(1, parseInt(document.getElementById("focusInput").value || "25", 10));
+            timeLeft = fMins * 60;
+            renderClock();
+        }
+
+        // --- 5. Tasks & Storage ---
+        let tasks = [];
+        let activeFilter = 'all';
+
+        function getStorageKey() { return `tasks_${currentBlockTitle}`; }
+
+        function loadBlockTasks() {
+            tasks = JSON.parse(localStorage.getItem(getStorageKey())) || [];
+            renderTasks();
+        }
+
+        function saveBlockTasks() {
+            localStorage.setItem(getStorageKey(), JSON.stringify(tasks));
+        }
+
+        function addTask(event) {
+            event.preventDefault();
+            const text = document.getElementById("taskInput").value.trim();
+            const priority = document.getElementById("priorityInput").value;
+            if (!text) return;
+
+            tasks.push({ id: Date.now(), text, priority, completed: false, pomos: 0 });
+            document.getElementById("taskInput").value = "";
+            saveBlockTasks();
+            renderTasks();
+        }
+
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            task.completed = !task.completed;
+
+            if (task.completed) {
+                const history = JSON.parse(localStorage.getItem("completedHistory")) || [];
+                history.unshift({
+                    text: task.text,
+                    block: currentBlockTitle,
+                    priority: task.priority,
+                    completedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                localStorage.setItem("completedHistory", JSON.stringify(history.slice(0, 50)));
+            }
+
+            saveBlockTasks();
+            renderTasks();
+        }
+
+        function pinTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            pinnedTaskId = task.id;
+            document.getElementById("pinnedTaskText").innerText = `[${task.priority}] ${task.text}`;
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            if (pinnedTaskId === id) {
+                pinnedTaskId = null;
+                document.getElementById("pinnedTaskText").innerText = "None (Click PIN on any task below)";
+            }
+            saveBlockTasks();
+            renderTasks();
+        }
+
+        function clearCompleted() {
+            tasks = tasks.filter(t => !t.completed);
+            saveBlockTasks();
+            renderTasks();
+        }
+
+        function setFilter(filterType) {
+            activeFilter = filterType;
+            ['all', 'pending', 'done'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.toggle('active', t === filterType);
+            });
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const list = document.getElementById("taskList");
+            list.innerHTML = "";
+
+            const total = tasks.length;
+            const doneCount = tasks.filter(t => t.completed).length;
+            const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+
+            document.getElementById("taskCounterLabel").innerText = `${doneCount} / ${total} COMPLETED`;
+            document.getElementById("progressPercent").innerText = `${pct}%`;
+            document.getElementById("progressFill").style.width = `${pct}%`;
+
+            const filtered = tasks.filter(t => {
+                if (activeFilter === 'pending') return !t.completed;
+                if (activeFilter === 'done') return t.completed;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<li style="font-size:13px; color:var(--text-secondary); padding:16px 4px;">No tasks in this view.</li>`;
+                return;
+            }
+
+            filtered.forEach(task => {
+                const li = document.createElement("li");
+                li.className = `task-item ${pinnedTaskId === task.id ? 'is-pinned' : ''}`;
+                li.innerHTML = `
+                    <div class="task-left">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                        <span class="prio-tag prio-${task.priority}">${task.priority}</span>
+                        <span class="task-text ${task.completed ? 'done' : ''}">${task.text}</span>
+                    </div>
+                    <div class="task-actions">
+                        <span class="pomo-count">${task.pomos || 0} POMO</span>
+                        <button class="mini-btn" onclick="pinTask(${task.id})">${pinnedTaskId === task.id ? 'PINNED' : 'PIN'}</button>
+                        <button class="mini-btn" onclick="deleteTask(${task.id})">DEL</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        applySavedTheme();
+        setupBlockContext();
+        renderClock();
+        loadBlockTasks();
+    </script>
+</body>
+</html>
